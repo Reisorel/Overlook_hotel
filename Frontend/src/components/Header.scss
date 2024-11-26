@@ -1,0 +1,50 @@
+.header-container {
+background-color: coral;
+display: flex; /* Utilisation de Flexbox */
+align-items: center;
+position: relative;
+height: auto;
+width: 100%;
+padding: 10px 20px; /* Ajoute un peu de marge interne */
+text-align: center;
+align-items: center;
+padding: 10px;
+font-size: 18px;
+z-index: 1000;
+box-sizing: border-box; /* Inclut le padding dans la largeur */
+}
+
+.logo {
+  font-size: 20px; /* Taille du logo */
+  font-weight: bold;
+  color: antiquewhite;
+  position: absolute; /* Positionne le logo indépendamment */
+  left: 20px; /* Le colle à gauche avec un espace */
+  cursor: pointer;
+}
+
+.logo:active {
+  text-decoration: underline; /* Ajoute un soulignement temporaire au clic */
+}
+
+.header-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.header-container h1 {
+  color: antiquewhite;
+  text-align: center;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.header-container p {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: antiquewhite;
+}
