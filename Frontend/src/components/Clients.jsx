@@ -45,6 +45,7 @@ export default function Clients() {
           </li>
         ))}
       </ul>
+      <button>Ajouter un nouveau client</button>
     </div>
   );
 }
