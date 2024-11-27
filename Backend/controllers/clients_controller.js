@@ -1,21 +1,23 @@
-// Getting client list :
-const Clients = require('../models/clients'); // Importation correcte du modèle
+// Model importation
+const Clients = require("../models/clients");
 
-// Récupération de la liste des clients
+// Get all client
 const getAllClients = async (req, res) => {
   try {
-    const clients = await Clients.findAll(); // Récupère tous les clients depuis la base
-    res.status(200).json({ clients }); // Retourne la liste des clients
+    const clients = await Clients.findAll();
+    res.status(200).json({ clients });
   } catch (error) {
     res.status(500).json({ message: "Error retrieving clients", error });
   }
 };
 
+// Create new client
 const createClient = async (req, res) => {
   try {
-    const { name, surname, address, birthdate, note } = req.body; // Récupère les données du corps de la requête
+    // Getting request body form placeholder
+    const { name, surname, address, birthdate, note } = req.body;
 
-    // Création du client avec les données récupérées
+    // Client creation
     const client = await Clients.create({
       name,
       surname,
@@ -24,15 +26,57 @@ const createClient = async (req, res) => {
       note,
     });
 
-    // Retourne le client créé dans la réponse
     res.status(201).json({ message: "Client created successfully!", client });
   } catch (error) {
-    // Gestion des erreurs
     res.status(500).json({ message: "Error creating client", error });
+  }
+};
+
+// Delete client
+const deleteClient = async (req, res) => {
+  try {
+    // Getting client id from forms params
+    const { id } = req.params;
+    // Verifying if client exists
+    const client = await Clients.findByPk(id);
+    if (!client) {
+      return res.status(404).json({ message: "Owner not found" });
+    }
+
+    await Clients.destroy({ where: { id } });
+    res.status(200).json({ message: "Client correctly deleted" });
+  } catch (error) {
+    console.error("Error during deleting process:", error);
+    res.status(500).json({ message: "Error deleting owner" });
+  }
+};
+
+//Modify client
+const modifyClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, surname, address, birthdate, note } = req.body;
+
+    const client = await Clients.findByPk(id);
+    if (!client) {
+      return res.status(404).json({ message: "Client not found !" });
+    }
+    // updating owner with new name
+    await client.update({ name, surname, address, birthdate, note });
+
+    res.status(200).json({
+      message: "Owner successfully updated",
+      client,
+    });
+  } catch (error) {
+    console.error("Error during modifying process :", error);
+    res.status(500).json({ message: "Error updating client" });
   }
 };
 
 module.exports = {
   getAllClients,
   createClient,
+  deleteClient,
+  modifyClient,
 };

@@ -1,6 +1,6 @@
 const Owner = require("../models/owner"); // Assure-toi d'importer le modèle correctement
 
-// Create an owner
+// Create owner
 const createOwner = async (req, res) => {
   try {
     const { name } = req.body; // Récupère le nom du propriétaire depuis la requête
@@ -29,19 +29,19 @@ const getAllOwners = async (req, res) => {
   }
 };
 
-// Delete an owner
+// Delete owner
 const deleteOwner = async (req, res) => {
   try {
     // Getting owner id form params
     const { id } = req.params;
 
-    // Vérifie si le propriétaire existe avant de le supprimer
+    // Verifying if owner exists
     const owner = await Owner.findByPk(id);
     if (!owner) {
       return res.status(404).json({ message: "Owner not found" });
     }
 
-    // Supprime le propriétaire
+    // deleting owner
     await Owner.destroy({ where: { id } });
 
     res.status(200).json({ message: "Owner correctly deleted" });
@@ -50,7 +50,7 @@ const deleteOwner = async (req, res) => {
     res.status(500).json({ message: "Error deleting owner" });
   }
 };
-
+// Modify owner
 const modifyOwner = async (req, res) => {
   try {
     // Getting owner id

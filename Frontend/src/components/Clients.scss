@@ -1,0 +1,16 @@
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); // 5 colonnes de largeur égale
+  gap: 0px; // Espacement entre les éléments
+
+  .header {
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid #000;
+  }
+
+  div {
+    padding: 5px;
+    border: 1px solid #ccc;
+  }
+}

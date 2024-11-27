@@ -1,6 +1,7 @@
 
 const express = require('express');
 const router = express.Router();
+
 const OwnerController = require('../controllers/owner_controller');
 const ClientsController = require('../controllers/clients_controller')
 
@@ -13,5 +14,7 @@ router.put('/owners/:id', OwnerController.modifyOwner);
 // Routes for clients
 router.get('/clients', ClientsController.getAllClients)
 router.post('/clients', ClientsController.createClient)
+router.delete('/clients/:id', ClientsController.deleteClient);
+router.put('/clients/:id', ClientsController.modifyClient);
 
 module.exports = router;
