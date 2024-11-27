@@ -40,14 +40,14 @@ const deleteClient = async (req, res) => {
     // Verifying if client exists
     const client = await Clients.findByPk(id);
     if (!client) {
-      return res.status(404).json({ message: "Owner not found" });
+      return res.status(404).json({ message: "Client not found" });
     }
 
     await Clients.destroy({ where: { id } });
     res.status(200).json({ message: "Client correctly deleted" });
   } catch (error) {
     console.error("Error during deleting process:", error);
-    res.status(500).json({ message: "Error deleting owner" });
+    res.status(500).json({ message: "Error deleting client" });
   }
 };
 
@@ -61,11 +61,11 @@ const modifyClient = async (req, res) => {
     if (!client) {
       return res.status(404).json({ message: "Client not found !" });
     }
-    // updating owner with new name
+    // updating client with new name
     await client.update({ name, surname, address, birthdate, note });
 
     res.status(200).json({
-      message: "Owner successfully updated",
+      message: "Client successfully updated",
       client,
     });
   } catch (error) {

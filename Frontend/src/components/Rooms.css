@@ -1,22 +1,17 @@
-.clients-grid {
+.rooms-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr); // 5 colonnes de largeur égale
-  gap: 0px; // Espacement entre les éléments
-
-  .header {
-    font-weight: bold;
-    text-align: center;
-    border: 2px solid #000;
-  }
-
-  div {
-    padding: 5px;
-    border: 1px solid #ccc;
-  }
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0px;
 }
-
-
-// Modale
+.rooms-grid .header {
+  font-weight: bold;
+  text-align: center;
+  border: 2px solid #000;
+}
+.rooms-grid div {
+  padding: 5px;
+  border: 1px solid #ccc;
+}
 
 .modal-overlay {
   position: fixed;
@@ -54,4 +49,4 @@
 
 .modal-content button:hover {
   background: #45a049;
-}
+}/*# sourceMappingURL=Rooms.css.map */

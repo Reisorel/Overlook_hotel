@@ -1,6 +1,6 @@
-.clients-grid {
+.rooms-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr); // 5 colonnes de largeur égale
+  grid-template-columns: repeat(8, 1fr); // 5 colonnes de largeur égale
   gap: 0px; // Espacement entre les éléments
 
   .header {

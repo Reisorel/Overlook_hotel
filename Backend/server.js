@@ -3,9 +3,9 @@ const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser"); // Pour analyser les données JSON
 const sequelize = require("./db");  // Connexion Sequelize
-const routes = require('./routes/routes.js');  // Assurez-vous d'importer correctement les routes
-
-
+const routes = require('./routes/routes.js');  // Importation des routes
+const Rooms = require('./models/rooms'); // Importation du modèle Rooms
+const Clients = require('./models/clients'); // Importation du modèle Rooms
 
 const app = express();
 const port = 3000;
@@ -21,10 +21,37 @@ app.use(express.static(path.join(__dirname, "../Frontend/dist")));
 
 // Tester la connexion à la base de données et démarrer le serveur uniquement si la connexion est réussie
 sequelize.authenticate()
-  .then(() => {
+  .then(async () => {
     console.log('Database connection established successfully');
 
-    // Démarre le serveur après une connexion réussie à la base de données
+    // Vérifier si la table Rooms est accessible
+    try {
+      const room = await Rooms.findOne();
+      if (room) {
+        console.log("Table 'Rooms' loaded !");
+      } else {
+        console.log("Table 'Rooms' loaded but not data found.");
+      }
+    } catch (error) {
+      console.error("Error accessing 'Rooms' table :", error);
+      // Si vous souhaitez arrêter le démarrage du serveur en cas d'erreur, décommentez la ligne suivante :
+      // throw error;
+    }
+    // Vérifier si la table Clients est accessible
+    try {
+      const client = await Clients.findOne();
+      if (client) {
+        console.log("Table 'Clients' loaded !");
+      } else {
+        console.log("Table 'Clients' loaded but not data found.");
+      }
+    } catch (error) {
+      console.error("Error accessing 'Clients' table :", error);
+      // Si vous souhaitez arrêter le démarrage du serveur en cas d'erreur, décommentez la ligne suivante :
+      // throw error;
+    }
+
+    // Démarre le serveur après une connexion réussie à la base de données et vérification de la table
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
     });
