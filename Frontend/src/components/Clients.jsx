@@ -100,11 +100,11 @@ export default function Clients() {
       );
 
       // Modal intervention
-      setModalMessage("Client supprimé avec succès !");
+      setModalMessage("Success deleting client !");
       setShowModal(true);
     } catch (err) {
       console.error("Error deleting client:", err);
-      setModalMessage("Échec de la suppression du client !");
+      setModalMessage("Failed to delete client !");
       setShowModal(true);
     }
   };
@@ -147,13 +147,13 @@ export default function Clients() {
       setMessage(data.message);
 
       //Show modal
-      setModalMessage("Données client correctement changées !");
+      setModalMessage("Client data correctly updated !");
       setShowModal(true);
 
       cancelEditing();
     } catch (err) {
       console.error("Error updating client:", err.message);
-      setModalMessage("Échec de la mise à jour des données !");
+      setModalMessage("Fail to update client !");
       setMessage(err.message);
     }
   };
@@ -172,10 +172,10 @@ export default function Clients() {
   if (error) {
     return <p>Erreur : {error}</p>;
   }
-
+  // Rendering the component
   return (
     <div>
-      <h1>Liste des Clients</h1>
+      <h1>Clients list</h1>
 
       {showModal && <Modal message={modalMessage} onClose={handleCloseModal} />}
 
@@ -188,11 +188,10 @@ export default function Clients() {
         <div className="header">Action</div>
 
         {clients.map((client) => (
-          
+
           <>
             {editingId === client.id ? (
               <>
-                {/* Mode édition : afficher des champs input */}
                 <input
                   type="text"
                   value={editingData.name}
@@ -227,12 +226,12 @@ export default function Clients() {
               </>
             ) : (
               <>
-                {/* Mode lecture : afficher les données */}
                 <div>{client.name}</div>
                 <div>{client.surname}</div>
                 <div>{client.address}</div>
                 <div>{client.birthdate}</div>
                 <div>{client.note}</div>
+
                 <div className="actions">
                   <button onClick={() => startEditing(client.id, client)}>
                     ✏️

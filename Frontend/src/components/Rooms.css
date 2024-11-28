@@ -1,16 +1,31 @@
+@charset "UTF-8";
 .rooms-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(8, 1fr); /* 8 colonnes */
   gap: 0px;
 }
+
 .rooms-grid .header {
   font-weight: bold;
   text-align: center;
-  border: 2px solid #000;
+  border-top: 2px solid #000; /* Bordure supérieure */
+  border-bottom: 2px solid #000; /* Bordure inférieure */
+  border-left: 2px solid #000; /* Bordure gauche */
 }
+
+.rooms-grid > .header:nth-child(8) {
+  border-right: 2px solid #000; /* Bordure droite pour la dernière cellule */
+  color: rgb(3, 120, 187);
+}
+
 .rooms-grid div {
   padding: 5px;
   border: 1px solid #ccc;
+}
+
+.rooms-grid input {
+  width: 100%; /* S'aligne à la largeur des cellules */
+  box-sizing: border-box;
 }
 
 .modal-overlay {

@@ -1,13 +1,23 @@
+@charset "UTF-8";
 .clients-grid {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(6, 1fr); /* 6 colonnes */
   gap: 0px;
 }
+
 .clients-grid .header {
   font-weight: bold;
   text-align: center;
-  border: 2px solid #000;
+  border-top: 2px solid #000; /* Bordure supérieure */
+  border-bottom: 2px solid #000; /* Bordure inférieure */
+  border-left: 2px solid #000; /* Bordure gauche */
 }
+
+.clients-grid > .header:nth-child(6) {
+  border-right: 2px solid #000; /* Bordure droite pour la dernière cellule */
+  color: red;
+}
+
 .clients-grid div {
   padding: 5px;
   border: 1px solid #ccc;

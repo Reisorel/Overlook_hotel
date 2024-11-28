@@ -15,8 +15,7 @@ const getAllRooms = async (req, res) => {
 const createRoom = async (req, res) => {
   try {
     // Getting request body form placeholder
-    const { name, type, price, available, description, capacity, id_owner } =
-      req.body;
+    const { name, type, price, available, description, capacity, id_owner } = req.body;
 
     const room = await Rooms.create({
       name,
@@ -27,7 +26,7 @@ const createRoom = async (req, res) => {
       capacity,
       id_owner,
     });
-
+    console.log("Room created in DB:", room);
     res.status(201).json({ message: "Room created successfully", room });
   } catch (error) {
     res.status(500).json({ message: "Error creating Room", error });

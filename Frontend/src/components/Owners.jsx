@@ -1,13 +1,33 @@
 import { useState, useEffect } from "react";
-import editIcon from "../assets/editer.png";
+import "./Owners.css";
+
+// Creating modal :
+function Modal({ message, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <p>{message}</p>
+        <button onClick={onClose}>OK</button>
+      </div>
+    </div>
+  );
+}
 
 export default function Owners() {
-  const [owners, setOwners] = useState([]); // Liste des propriétaires
-  const [name, setName] = useState(""); // Champ de création
-  const [editingId, setEditingId] = useState(null); // ID du propriétaire en cours d'édition
-  const [editingName, setEditingName] = useState(""); // Nom temporaire pendant l'édition
+  // States
+  const [owners, setOwners] = useState([]); // Stocke les owners
+  const [error, setError] = useState(null); // Stocke les erreurs
   const [message, setMessage] = useState(""); // Message de succès ou d'erreur
-  const [error, setError] = useState(null); // Gestion des erreurs
+
+  const [editingId, setEditingId] = useState(null); // ID du propriétaire en cours d'édition
+  const [editingData, setEditingData] = useState({}); // Nom temporaire pendant l'édition
+
+  const [newOwner, setNewOwner] = useState({
+    name: "",
+  });
+
+  const [showModal, setShowModal] = useState(false); // Affichage de la modale
+  const [modalMessage, setModalMessage] = useState(""); // Message de la modal
 
   // Getting owner names
   useEffect(() => {
@@ -18,167 +38,181 @@ export default function Owners() {
           throw new Error("Erreur lors de la récupération des propriétaires");
         }
         const data = await response.json();
+
         setOwners(data.owners);
       } catch (err) {
         setError(err.message);
       }
     };
+
     fetchOwners();
   }, []);
 
-  // Creating owner
-  const handleCreateOwner = async (e) => {
+  // Creating new owner
+  const handleInputChange = async (e) => {
+    const { name, value } = e.target;
+    setNewOwner({ ...newOwner, [name]: value });
+  };
+
+  const handleAddOwner = async (e) => {
     e.preventDefault();
     try {
       const response = await fetch("http://localhost:3000/api/owners", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newOwner),
       });
-      if (!response.ok) {
-        throw new Error("Erreur lors de la création du propriétaire");
-      }
-      const data = await response.json();
-      setOwners((prevOwners) => [...prevOwners, data.owner]); // Ajoute le nouveau propriétaire
-      setName(""); // Vide le champ de création
-      setMessage(data.message); // Message de succès
+
+      if (!response.ok) throw new Error("Failed to add owner");
+
+      const result = await response.json();
+      setOwners((prevOwners) => [...prevOwners, result.owner]);
+      setNewOwner({
+        name: "",
+      });
     } catch (err) {
-      setMessage(err.message); // Message d'erreur
+      console.log("Error adding owner", err);
     }
   };
 
   // Deleting owner
-  const handleDeleteOwner = async (id) => {
+  const handleDelete = async (id) => {
     try {
       const response = await fetch(`http://localhost:3000/api/owners/${id}`, {
         method: "DELETE",
       });
+
       if (!response.ok) {
-        throw new Error("Erreur lors de la suppression du propriétaire");
+        throw new Error("Failed to delete owner");
       }
-      const data = await response.json();
-      setOwners((prevOwners) => prevOwners.filter((owner) => owner.id !== id)); // Supprime localement
-      setMessage(data.message); // Message de succès
+
+      setOwners((prevOwners) => prevOwners.filter((owner) => owner.id !== id));
+      // Modal intervention
+      setModalMessage("Success deleting owner !");
+      setShowModal(true);
     } catch (err) {
-      setMessage(err.message); // Message d'erreur
+      console.error("Error deleting owner:", err);
+      setModalMessage("Failed to delete owner !");
+      setShowModal(true);
     }
   };
 
   // Editing owner
-  const startEditing = (id, currentName) => {
-    setEditingId(id); // Définit l'ID en cours d'édition
-    setEditingName(currentName); // Pré-remplit le champ d'édition
+  const startEditing = (id, currentData) => {
+    setEditingId(id);
+    setEditingData(currentData);
+  };
+
+  const handleFieldChange = (fieldName, value) => {
+    setEditingData((prevData) => ({
+      ...prevData,
+      [fieldName]: value,
+    }));
   };
 
   // Saving editing
-  const handleUpdateOwner = async (id, newName) => {
+  const handleUpdateOwner = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/owners/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: newName }),
-      });
+      const response = await fetch(
+        `http://localhost:3000/api/owners/${editingId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(editingData),
+        }
+      );
       if (!response.ok) {
-        throw new Error("Erreur lors de la modification du propriétaire");
+        throw new Error("Failed to update owner");
       }
       const data = await response.json();
       setOwners((prevOwners) =>
         prevOwners.map((owner) =>
-          owner.id === id ? { ...owner, name: newName } : owner
+          owner.id === editingId ? { ...owner, ...editingData } : owner
         )
       );
-      setMessage(data.message); // Message de succès
-      cancelEditing(); // Sort du mode édition
+      setMessage(data.message);
+
+      //Show modal
+      setModalMessage("Owner data correctly updated!");
+      setShowModal(true);
+
+      cancelEditing();
     } catch (err) {
-      setMessage(err.message); // Message d'erreur
+      console.error("Error updating owner:", err.message);
+      setModalMessage("Fail to update owner !");
+      setMessage(err.message);
     }
   };
 
-  // Canceling editing
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setModalMessage("");
+  };
+
   const cancelEditing = () => {
     setEditingId(null); // Réinitialise l'ID en cours d'édition
-    setEditingName(""); // Vide le champ temporaire
+    setEditingData({}); // Vide les données d'édition
   };
+
+  // Handeling errors
+  if (error) {
+    return <p>Erreur : {error}</p>;
+  }
 
   return (
     <div>
-      <h1>Owners List</h1>
-      <ul>
+      <h1>Owners list</h1>
+
+      {showModal && <Modal message={modalMessage} onClose={handleCloseModal} />}
+
+      <div className="owners-grid">
+        <div className="header">Name</div>
+        <div className="header">Action</div>
+
         {owners.map((owner) => (
-          <li key={owner.id}>
+          <>
             {editingId === owner.id ? (
-              // Mode édition
-              <div>
+              <>
                 <input
                   type="text"
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  placeholder="Modifier le nom"
+                  value={editingData.name}
+                  onChange={(e) => handleFieldChange("name", e.target.value)}
                 />
-                <button
-                  onClick={() => handleUpdateOwner(owner.id, editingName)}
-                >
-                  💾
-                </button>
-                <button onClick={cancelEditing}>❌</button>
-
-              </div>
+                <div className="actions">
+                  <button onClick={handleUpdateOwner}>💾</button>
+                  <button onClick={cancelEditing}>❌</button>
+                </div>
+              </>
             ) : (
-              // Affichage normal
-              <div>
-                {owner.name}
-                <button
-                  onClick={() => startEditing(owner.id, owner.name)}
-                  style={{
-                    marginLeft: "5px",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    borderRadius: "3px",
-                    padding: "5px 5px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => handleDeleteOwner(owner.id)}
-                  style={{
-                    marginLeft: "5px",
-                    backgroundColor: "transparent",
-                    border: "none",
-                    borderRadius: "3px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ❌
-                </button>
-              </div>
+              <>
+                <div>{owner.name}</div>
+
+                <div className="actions">
+                  <button onClick={() => startEditing(owner.id, owner)}>
+                    ✏️
+                  </button>
+                  <button onClick={() => handleDelete(owner.id)}>❌</button>
+                </div>
+              </>
             )}
-          </li>
+          </>
         ))}
-      </ul>
+      </div>
 
-      {/* Affichage des messages */}
-      {message && <p>{message}</p>}
-
-      {/* Formulaire de création */}
-      <form onSubmit={handleCreateOwner}>
+      <h2>Add new owner</h2>
+      <form onSubmit={handleAddOwner}>
         <input
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)} // Met à jour l'état `name`
-          placeholder="Nom du propriétaire"
+          name="name"
+          placeholder="Name"
+          value={newOwner.name}
+          onChange={handleInputChange}
           required
         />
-        <button type="submit">Ajouter un propriétaire</button>
+        <button type="submit">Add new owner</button>
       </form>
-
-      {/* Affichage des erreurs */}
-      {error && <p>Erreur : {error}</p>}
     </div>
   );
 }

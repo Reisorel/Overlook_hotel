@@ -86,9 +86,10 @@ export default function Rooms() {
       if (!response.ok) throw new Error("Failed to add room");
 
       const result = await response.json();
-      console.log("Room added:", result.rooms);
-      setRooms((prevRooms) => [...prevRooms, result.rooms]);
-      
+      console.log("Full API response:", result);
+      console.log("Room added:", result.room);
+      setRooms((prevRooms) => [...prevRooms, result.room]);
+
       setNewRoom({
         name: "",
         type: "",
@@ -213,7 +214,6 @@ export default function Rooms() {
           <>
             {editingId === room.id ? (
               <>
-                {/* Mode édition : afficher des champs input */}
                 <input
                   type="text"
                   value={editingData.name}
@@ -250,6 +250,13 @@ export default function Rooms() {
                     handleFieldChange("capacity", e.target.value)
                   }
                 />
+                <input
+                  type="integer"
+                  value={editingData.id_owner}
+                  onChange={(e) =>
+                    handleFieldChange("id_owner", e.target.value)
+                  }
+                />
                 <div className="actions">
                   <button onClick={handleUpdateRoom}>💾</button>
                   <button onClick={cancelEditing}>❌</button>
@@ -257,7 +264,6 @@ export default function Rooms() {
               </>
             ) : (
               <>
-                {/* Mode lecture : afficher les données */}
                 <div>{room.name}</div>
                 <div>{room.type}</div>
                 <div>{room.price}</div>
@@ -265,6 +271,7 @@ export default function Rooms() {
                 <div>{room.description}</div>
                 <div>{room.capacity}</div>
                 <div>{room.id_owner}</div>
+
                 <div className="actions">
                   <button onClick={() => startEditing(room.id, room)}>
                     ✏️
