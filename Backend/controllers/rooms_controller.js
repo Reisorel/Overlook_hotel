@@ -14,9 +14,7 @@ const getAllRooms = async (req, res) => {
 // Create room
 const createRoom = async (req, res) => {
   try {
-    // Getting request body form placeholder
     const { name, type, price, available, description, capacity, id_owner } = req.body;
-
     const room = await Rooms.create({
       name,
       type,
@@ -26,17 +24,17 @@ const createRoom = async (req, res) => {
       capacity,
       id_owner,
     });
-    console.log("Room created in DB:", room);
+
     res.status(201).json({ message: "Room created successfully", room });
   } catch (error) {
     res.status(500).json({ message: "Error creating Room", error });
   }
 };
 
+// Delete Room
 const deleteRoom = async (req, res) => {
   try {
     const { id } = req.params;
-
     const room = await Rooms.findByPk(id);
     if (!room) {
       return res.status(404).json({ message: "Room not found" });
@@ -59,7 +57,6 @@ const modifyRoom = async (req, res) => {
     if (!room) {
       return res.status(404).json({ message: "Room not found !" });
     }
-    // updating owner with new name
     await room.update({ name, type, available, description, capacity, id_owner });
 
     res.status(200).json({

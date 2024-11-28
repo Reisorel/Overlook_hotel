@@ -38,12 +38,6 @@ const Rooms = sequelize.define(
     id_owner: {
       type: DataTypes.INTEGER, // Correspond au type SQL "integer"
       allowNull: true,
-      references: {
-        model: "Owner", // Nom de la table liée
-        key: "id", // Clé étrangère référencée
-      },
-      onUpdate: "CASCADE", // Action lors d'une mise à jour
-      onDelete: "SET NULL", // Action lors d'une suppression
     },
   },
   {

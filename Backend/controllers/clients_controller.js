@@ -14,10 +14,7 @@ const getAllClients = async (req, res) => {
 // Create new client
 const createClient = async (req, res) => {
   try {
-    // Getting request body form placeholder
     const { name, surname, address, birthdate, note } = req.body;
-
-    // Client creation
     const client = await Clients.create({
       name,
       surname,
@@ -35,9 +32,7 @@ const createClient = async (req, res) => {
 // Delete client
 const deleteClient = async (req, res) => {
   try {
-    // Getting client id from forms params
     const { id } = req.params;
-    // Verifying if client exists
     const client = await Clients.findByPk(id);
     if (!client) {
       return res.status(404).json({ message: "Client not found" });
@@ -61,7 +56,6 @@ const modifyClient = async (req, res) => {
     if (!client) {
       return res.status(404).json({ message: "Client not found !" });
     }
-    // updating client with new name
     await client.update({ name, surname, address, birthdate, note });
 
     res.status(200).json({

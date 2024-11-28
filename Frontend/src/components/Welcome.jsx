@@ -27,6 +27,12 @@ export default function Welcome() {
         style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
         >Click here to see the clients</span>
       </p>
+      <p>
+        <span
+        onClick={() => navigate("/reservations")}
+        style={{ cursor: "pointer", color: "blue", textDecoration: "underline" }}
+        >Click here to see the reservations</span>
+      </p>
     </div>
   );
 }

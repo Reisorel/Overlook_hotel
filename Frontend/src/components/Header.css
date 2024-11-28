@@ -1,6 +1,6 @@
 @charset "UTF-8";
 .header-container {
-  background-color: coral;
+  background-color: #008B8B;
   display: flex; /* Utilisation de Flexbox */
   align-items: center;
   position: relative;

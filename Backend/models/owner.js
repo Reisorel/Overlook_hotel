@@ -21,8 +21,4 @@ const Owner = sequelize.define(
   }
 );
 
-// Ajout d'une méthode pour l'association avec les chambres (Rooms)
-// Owner.hasMany(Room, { foreignKey: 'id_owner' });
-// Room.belongsTo(Owner, { foreignKey: 'id_owner' });
-
 module.exports = Owner;

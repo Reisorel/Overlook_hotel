@@ -37,10 +37,10 @@ export default function Clients() {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        console.log("Début de la requête fetch pour récupérer les clients...");
+        console.log("Starting fetch for getting clients");
         const response = await fetch("http://localhost:3000/api/clients");
         if (!response.ok) {
-          throw new Error("Erreur lors de la récupération des clients");
+          throw new Error("Error getting clients");
         }
         const data = await response.json();
 
@@ -244,7 +244,7 @@ export default function Clients() {
         ))}
       </div>
 
-      {/* Formulaire d'ajout d'un nouveau client */}
+      {/* New client form */}
       <h2>Add new client</h2>
       <form onSubmit={handleAddClient}>
         <input

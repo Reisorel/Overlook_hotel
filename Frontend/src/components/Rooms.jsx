@@ -215,9 +215,9 @@ export default function Rooms() {
             {editingId === room.id ? (
               <>
                 <input
-                  type="text"
-                  value={editingData.name}
-                  onChange={(e) => handleFieldChange("name", e.target.value)}
+                  type="date"
+                  value={editingData.check_in}
+                  onChange={(e) => handleFieldChange("check-in", e.target.value)}
                 />
                 <input
                   type="text"
