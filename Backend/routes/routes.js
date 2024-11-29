@@ -6,6 +6,7 @@ const OwnerController = require('../controllers/owner_controller');
 const ClientsController = require('../controllers/clients_controller');
 const RoomsController = require('../controllers/rooms_controller');
 const ReservationController = require('../controllers/reservations_controller')
+const UsersController = require('../controllers/users_controller')
 
 // Routes for owners
 router.get('/owners', OwnerController.getAllOwners);
@@ -30,5 +31,11 @@ router.get('/reservations', ReservationController.getAllReservations)
 router.post('/reservations', ReservationController.createReservation)
 router.delete('/reservations/:id', ReservationController.deleteReservation);
 router.put('/reservations/:id', ReservationController.modifyReservation);
+
+// Routes for users
+router.get('/users', UsersController.getAllUsers)
+router.post('/users', UsersController.createUser)
+router.delete('/users/:id', UsersController.deleteUser);
+router.put('/users/:id', UsersController.modifyUser);
 
 module.exports = router;

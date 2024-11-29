@@ -8,6 +8,7 @@ const Rooms = require("./models/rooms");
 const Clients = require("./models/clients");
 const Reservations = require("./models/reservations");
 const Owners = require("./models/owner");
+const Users = require("./models/users");
 const defineAssociations = require("./models/associations");
 
 const app = express();
@@ -74,6 +75,17 @@ sequelize
       }
     } catch (error) {
       console.error("Error accessing 'Reservations' table :", error);
+    }
+    // Check if user table is accessible
+    try {
+      const user = await Users.findOne();
+      if (user) {
+        console.log("Table 'Users' loaded !");
+      } else {
+        console.log("Table 'Users' loaded but not data found.");
+      }
+    } catch (error) {
+      console.error("Error accessing 'Users' table :", error);
     }
 
     // Démarre le serveur après une connexion réussie à la base de données et vérification de la table
