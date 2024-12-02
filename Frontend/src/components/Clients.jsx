@@ -15,12 +15,12 @@ function Modal({ message, onClose }) {
 
 export default function Clients() {
   // States
-  const [clients, setClients] = useState([]); // Stocke les clients
-  const [error, setError] = useState(null); // Stocke les erreurs
-  const [message, setMessage] = useState(""); // Messages de succès ou d'erreur
+  const [clients, setClients] = useState([]);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState("");
 
-  const [editingId, setEditingId] = useState(null); // ID en cours d'édition
-  const [editingData, setEditingData] = useState({}); // Données temporaires d'édition
+  const [editingId, setEditingId] = useState(null);
+  const [editingData, setEditingData] = useState({});
 
   const [newClient, setNewClient] = useState({
     name: "",
@@ -28,33 +28,36 @@ export default function Clients() {
     address: "",
     birthdate: "",
     note: "",
-    email: "", // Champ pour Users
-    password_hash: "", // Champ pour Users
+    email: "",
+    password_hash: "",
   });
 
-  const [showModal, setShowModal] = useState(false); // Affichage de la modale
-  const [modalMessage, setModalMessage] = useState(""); // Message de la modal
+  //Modal states
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
-  // Getting client list
+  // Fetching client list
   useEffect(() => {
     const fetchClients = async () => {
       try {
         console.log("Starting fetch for getting clients");
         const response = await fetch("http://localhost:3000/api/clients");
-        console.log("Response status:", response.status); // Ajoute ce log
+        console.log("Response status:", response.status);
+
 
         if (!response.ok) {
           throw new Error("Error getting clients");
         }
-
         const data = await response.json();
-        console.log(data); // Ajoute ce log pour vérifier la structure de la réponse
 
-        // Vérifie si la liste de clients est vide ou si un message d'erreur est présent
+        console.log(data.clients);
+        console.log("Fetched data:", data.clients);
+
+        // Checking if list empty
         if (data.message && data.message === "No clients found") {
-          setClients([]);  // Si aucun client, on vide la liste
+          setClients([]);
         } else {
-          setClients(data.clients);  // Sinon, on met à jour les clients
+          setClients(data.clients);
         }
       } catch (err) {
         setError(err.message);
@@ -67,6 +70,7 @@ export default function Clients() {
   // Create new client
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setNewClient({ ...newClient, [name]: value });
   };
 
@@ -82,6 +86,8 @@ export default function Clients() {
       if (!response.ok) throw new Error("Failed to add client");
 
       const result = await response.json();
+      console.log("Full API response:", result);
+      console.log("Client added:", result.client);
       setClients((prevClients) => [...prevClients, result.client]);
       setNewClient({
         name: "",
@@ -89,14 +95,22 @@ export default function Clients() {
         address: "",
         birthdate: "",
         note: "",
-        email: "", // email form
-        password_hash: "", // users form
+        email: "",
+        password_hash: "",
       });
+      console.log("Client to be added:", newClient);
+
+      // Show modal
+      setModalMessage("Client added successfully!");
+      setShowModal(true);
     } catch (err) {
       console.error("Error adding client:", err);
+      setModalMessage("Failed to add client!");
+      setShowModal(true);
     }
   };
 
+  // Deleting client :
   const handleDelete = async (id) => {
     if (!id) {
       setModalMessage("Invalid client ID!");
@@ -108,7 +122,7 @@ export default function Clients() {
       "Are you sure you want to delete this client?"
     );
     if (!confirmDelete) {
-      return; // L'utilisateur a annulé la suppression
+      return;
     }
 
     try {
@@ -121,18 +135,16 @@ export default function Clients() {
         throw new Error(errorDetails.message || "Failed to delete client");
       }
 
-      // Mise à jour de l'état des clients
-      setClients((prevClients) =>
-        prevClients.filter((client) => client.id !== id)
-      );
+      // Updating client state :
+      setClients((prevClients) => prevClients.filter((client) => client.id !== id));
 
-      // Succès : affichage dans le modal
+      // Show success modal
       setModalMessage("Success deleting client!");
       setShowModal(true);
     } catch (err) {
       console.error("Error deleting client:", err);
 
-      // Échec : affichage de l'erreur dans le modal
+      // Show error modal
       setModalMessage(err.message || "Failed to delete client!");
       setShowModal(true);
     }
@@ -143,8 +155,8 @@ export default function Clients() {
     setEditingId(id);
     setEditingData({
       ...currentData,
-      email: currentData.email || "", // Pré-remplit l'email
-      password_hash: "", // Champ vide pour des raisons de sécurité
+      email: currentData.user?.email || "",
+      password_hash: currentData.user?.password_hash || "",
     });
   };
 
@@ -155,8 +167,10 @@ export default function Clients() {
     }));
   };
 
+  // Save editing
   const handleUpdateClient = async () => {
     try {
+      console.log("Data being sent for update:", editingData);
       const response = await fetch(
         `http://localhost:3000/api/clients/${editingId}`,
         {
@@ -165,8 +179,8 @@ export default function Clients() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(editingData),
-        }
-      );
+        });
+
       if (!response.ok) {
         const errorDetails = await response.json();
         throw new Error(errorDetails.message || "Failed to update client");
@@ -175,18 +189,20 @@ export default function Clients() {
       const data = await response.json();
       setClients((prevClients) =>
         prevClients.map((client) =>
-          client.id === editingId ? { ...client, ...editingData } : client
+          client.id === editingId ? data.client : client
         )
       );
+
       setMessage(data.message);
 
-      //Show modal
+      //Show sucess modal
       setModalMessage("Client data correctly updated !");
       setShowModal(true);
 
       cancelEditing();
     } catch (err) {
       console.error("Error updating client:", err.message);
+      // Show error modal
       setModalMessage("Fail to update client !");
       setMessage(err.message);
     }
@@ -198,14 +214,15 @@ export default function Clients() {
   };
 
   const cancelEditing = () => {
-    setEditingId(null); // Réinitialise l'ID en cours d'édition
-    setEditingData({}); // Vide les données d'édition
+    setEditingId(null);
+    setEditingData({});
   };
 
   // Handeling errors
   if (error) {
     return <p>Erreur : {error}</p>;
   }
+
   // Rendering the component
   return (
     <div>
@@ -221,6 +238,8 @@ export default function Clients() {
         <div className="header">Note</div>
         <div className="header">email</div>
         <div className="header">password</div>
+        <div className="header">Client id</div>
+        <div className="header">User ID</div>
         <div className="header">Action</div>
 
         {clients.map((client) => (
@@ -258,16 +277,17 @@ export default function Clients() {
                   type="email"
                   value={editingData.email} // including email
                   onChange={(e) => handleFieldChange("email", e.target.value)}
-                  placeholder="Email"
+                  autoComplete="off"
                 />
                 <input
                   type="password"
                   value={editingData.password_hash} // including password
                   onChange={(e) =>
-                    handleFieldChange("password_hash", e.target.value)
-                  }
-                  placeholder="Password"
+                    handleFieldChange("password_hash", e.target.value)}
+                    autoComplete="off"
                 />
+                <div>{client.id}</div>
+                <div>{client.user?.id}</div>
                 <div className="actions">
                   <button onClick={handleUpdateClient}>💾</button>
                   <button onClick={cancelEditing}>❌</button>
@@ -280,8 +300,10 @@ export default function Clients() {
                 <div>{client.address}</div>
                 <div>{client.birthdate}</div>
                 <div>{client.note}</div>
-                <div>{client.email}</div>
-                <div>{client.password_hash}</div>
+                <div>{client.user?.email}</div>
+                <div>{client.user?.password_hash}</div>
+                <div>{client.id}</div>
+                <div>{client.user?.id}</div>
 
                 <div className="actions">
                   <button onClick={() => startEditing(client.id, client)}>

@@ -216,7 +216,7 @@ export default function Reservations() {
                   type="date"
                   value={editingData.check_out}
                   onChange={(e) =>
-                    handleFieldChange("checkout_out", e.target.value)
+                    handleFieldChange("check_out", e.target.value)
                   }
                 />
                 <input

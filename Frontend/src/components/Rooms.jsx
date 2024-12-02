@@ -36,19 +36,22 @@ export default function Rooms() {
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
-  // Fetching rooms
+  // Fetching rooms list
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         console.log("Début de la requête fetch pour récupérer les chambres...");
         const response = await fetch("http://localhost:3000/api/rooms");
+
         if (!response.ok) {
           throw new Error("Failed to fetch rooms");
         }
+
         const data = await response.json();
 
         setRooms(data.rooms);
         console.log("Fetched rooms:", data.rooms);
+
       } catch (err) {
         console.error("Error fetching rooms:", err);
         setError("Failed to fetch rooms");
@@ -60,16 +63,15 @@ export default function Rooms() {
 
   // Create new room
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target; // Récupération des propriétés de l'élément modifié
+    const { name, value, type, checked } = e.target;
 
-    // Met à jour le champ correspondant dans l'état `newRoom`
+
     setNewRoom((prevRoom) => ({
       ...prevRoom,
-      [name]: type === "checkbox" ? checked : value, // Gère les cases à cocher différemment
+      [name]: type === "checkbox" ? checked : value, // Handeling checkboxes
     }));
   };
 
-  // Adding a new room
   const handleAddRoom = async (e) => {
     e.preventDefault();
     if (!newRoom.name || !newRoom.type || !newRoom.price) {
@@ -102,7 +104,7 @@ export default function Rooms() {
       console.log("Room to be added:", newRoom);
 
 
-      // Show success modal
+      // Show modal
       setModalMessage("Room added successfully!");
       setShowModal(true);
     } catch (err) {
@@ -114,15 +116,30 @@ export default function Rooms() {
 
   // Deleting a room
   const handleDelete = async (id) => {
+    if (!id) {
+      setModalMessage("Invalid room ID!");
+      setShowModal(true);
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this room?"
+    );
+    if (!confirmDelete) {
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:3000/api/rooms/${id}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete room");
+        const errorDetails = await response.json();
+        throw new Error(errorDetails.message || "Failed to delete room");
       }
 
+      // Updating room state :
       setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
 
       // Show success modal
@@ -130,6 +147,7 @@ export default function Rooms() {
       setShowModal(true);
     } catch (err) {
       console.error("Error deleting room:", err);
+      // Show error modal
       setModalMessage("Failed to delete room!");
       setShowModal(true);
     }
@@ -137,8 +155,8 @@ export default function Rooms() {
 
   // Editing room :
   const startEditing = (id, currentData) => {
-    setEditingId(id); // Définit la room en cours d'édition
-    setEditingData(currentData); // Pré-remplit les données d'édition
+    setEditingId(id);
+    setEditingData(currentData);
   };
 
   const handleFieldChange = (fieldName, value) => {
@@ -150,6 +168,7 @@ export default function Rooms() {
 
   const handleUpdateRoom = async () => {
     try {
+      console.log("Data being sent for update:", editingData);
       const response = await fetch(
         `http://localhost:3000/api/rooms/${editingId}`,
         {
@@ -160,17 +179,23 @@ export default function Rooms() {
           body: JSON.stringify(editingData)
         }
       );
+
       if (!response.ok) {
-        throw new Error ("Failed to update room")
+        const errorDetails = await response.json();
+        throw new Error(errorDetails.message || "Failed to update client");
       }
+
       const data = await response.json();
+
       setRooms((prevRooms) =>
         prevRooms.map((room) =>
           room.id === editingId ? { ...room, ...editingData } : room
         )
       );
+
       setMessage(data.message)
 
+      //Show success modal
       setModalMessage("Rooms data correctly updated");
       setShowModal(true);
 
@@ -188,10 +213,13 @@ export default function Rooms() {
   };
 
   const cancelEditing = () => {
-    setEditingId(null); // Réinitialise l'ID en cours d'édition
-    setEditingData({}); // Vide les données d'édition
+    setEditingId(null);
+    setEditingData({});
   };
-
+  // Handeling errors
+  if (error) {
+    return <p>Erreur : {error}</p>;
+  }
 
   // Rendering the component
   return (
@@ -207,6 +235,7 @@ export default function Rooms() {
         <div className="header">Available</div>
         <div className="header">Description</div>
         <div className="header">Capacity</div>
+        <div className="header">Room ID</div>
         <div className="header">Owner ID</div>
         <div className="header">Action</div>
 
@@ -250,6 +279,7 @@ export default function Rooms() {
                     handleFieldChange("capacity", e.target.value)
                   }
                 />
+                <div>{room.id}</div>
                 <input
                   type="integer"
                   value={editingData.id_owner}
@@ -270,6 +300,7 @@ export default function Rooms() {
                 <div>{room.available ? "Yes" : "No" }</div>
                 <div>{room.description}</div>
                 <div>{room.capacity}</div>
+                <div>{room.id}</div>
                 <div>{room.id_owner}</div>
 
                 <div className="actions">
@@ -284,6 +315,7 @@ export default function Rooms() {
         ))}
       </div>
 
+      {/* New room form */}
       <h2>Add new room</h2>
       <form onSubmit={handleAddRoom}>
         <input

@@ -1,3 +1,11 @@
+/**
+ * Users_Controller.js
+ * This file contains functions to manage users.
+ * Functions include retrieving all users, creating new users, deleting users,
+ * and modifying user details while maintaining referential integrity with clients.
+ */
+
+// Model importation
 const Users = require("../models/users");
 
 // Get all users

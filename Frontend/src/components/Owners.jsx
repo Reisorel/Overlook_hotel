@@ -15,31 +15,45 @@ function Modal({ message, onClose }) {
 
 export default function Owners() {
   // States
-  const [owners, setOwners] = useState([]); // Stocke les owners
-  const [error, setError] = useState(null); // Stocke les erreurs
-  const [message, setMessage] = useState(""); // Message de succès ou d'erreur
+  const [owners, setOwners] = useState([]);
+  const [error, setError] = useState(null);
+  const [message, setMessage] = useState("");
 
-  const [editingId, setEditingId] = useState(null); // ID du propriétaire en cours d'édition
-  const [editingData, setEditingData] = useState({}); // Nom temporaire pendant l'édition
+  const [editingId, setEditingId] = useState(null);
+  const [editingData, setEditingData] = useState({});
 
   const [newOwner, setNewOwner] = useState({
     name: "",
+    email: "",
+    password_hash: "",
   });
 
-  const [showModal, setShowModal] = useState(false); // Affichage de la modale
-  const [modalMessage, setModalMessage] = useState(""); // Message de la modal
+  // Modal states
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
-  // Getting owner names
+  // Fetching owner list
   useEffect(() => {
     const fetchOwners = async () => {
       try {
+        console.log("Starting fetch for getting owners");
         const response = await fetch("http://localhost:3000/api/owners");
+        console.log("Response status:", response.status);
+
         if (!response.ok) {
           throw new Error("Erreur lors de la récupération des propriétaires");
         }
         const data = await response.json();
 
-        setOwners(data.owners);
+        console.log(data.owners);
+        console.log("Fetched data:", data.owners);
+
+        // Checking if list empty
+        if (data.message && data.message === "No owners found") {
+          setOwners([]);
+        } else {
+          setOwners(data.owners);
+        }
       } catch (err) {
         setError(err.message);
       }
@@ -49,9 +63,13 @@ export default function Owners() {
   }, []);
 
   // Creating new owner
-  const handleInputChange = async (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewOwner({ ...newOwner, [name]: value });
+
+    setNewOwner((prevOwner) => ({
+      ...prevOwner,
+      [name]: value,
+    }));
   };
 
   const handleAddOwner = async (e) => {
@@ -66,41 +84,74 @@ export default function Owners() {
       if (!response.ok) throw new Error("Failed to add owner");
 
       const result = await response.json();
+      console.log("Full API response:", result);
+      console.log("Owner added:", result.owner);
       setOwners((prevOwners) => [...prevOwners, result.owner]);
       setNewOwner({
         name: "",
+        email: "",
+        password_hash: "",
       });
+      console.log("Owner to be added:", newOwner);
+
+      // Show modal
+      setModalMessage("Owner added successfully!");
+      setShowModal(true);
     } catch (err) {
-      console.log("Error adding owner", err);
+      console.error("Error adding owner:", err);
+      setModalMessage("Failed to add owner!");
+      setShowModal(true);
     }
   };
 
   // Deleting owner
   const handleDelete = async (id) => {
+    if (!id) {
+      setModalMessage("Invalid client ID!");
+      setShowModal(true);
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this client?"
+    );
+    if (!confirmDelete) {
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:3000/api/owners/${id}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete owner");
+        const errorDetails = await response.json(); // Capture des détails si fournis par l'API
+        throw new Error(errorDetails.message || "Failed to delete client");
       }
 
+      // Updating owner state :
       setOwners((prevOwners) => prevOwners.filter((owner) => owner.id !== id));
-      // Modal intervention
+
+      // Show success modal
       setModalMessage("Success deleting owner !");
       setShowModal(true);
     } catch (err) {
       console.error("Error deleting owner:", err);
+
+      // Show error modal
       setModalMessage("Failed to delete owner !");
       setShowModal(true);
     }
   };
 
-  // Editing owner
+  // Edit client
   const startEditing = (id, currentData) => {
     setEditingId(id);
-    setEditingData(currentData);
+    setEditingData({
+      ...currentData,
+      email: currentData.user?.email || "",
+      password_hash: currentData.user?.password_hash || "",
+    });
   };
 
   const handleFieldChange = (fieldName, value) => {
@@ -113,6 +164,7 @@ export default function Owners() {
   // Saving editing
   const handleUpdateOwner = async () => {
     try {
+      console.log("Data being sent for update:", editingData);
       const response = await fetch(
         `http://localhost:3000/api/owners/${editingId}`,
         {
@@ -124,23 +176,26 @@ export default function Owners() {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to update owner");
+      const errorDetails = await response.json();
+      throw new Error(errorDetails.message || "Failed to update client");
       }
+
       const data = await response.json();
       setOwners((prevOwners) =>
         prevOwners.map((owner) =>
-          owner.id === editingId ? { ...owner, ...editingData } : owner
+          owner.id === editingId ? data.owner : owner
         )
       );
       setMessage(data.message);
 
-      //Show modal
+      //Show sucess modal
       setModalMessage("Owner data correctly updated!");
       setShowModal(true);
 
       cancelEditing();
     } catch (err) {
       console.error("Error updating owner:", err.message);
+      // Show error modal
       setModalMessage("Fail to update owner !");
       setMessage(err.message);
     }
@@ -152,8 +207,8 @@ export default function Owners() {
   };
 
   const cancelEditing = () => {
-    setEditingId(null); // Réinitialise l'ID en cours d'édition
-    setEditingData({}); // Vide les données d'édition
+    setEditingId(null);
+    setEditingData({});
   };
 
   // Handeling errors
@@ -161,6 +216,7 @@ export default function Owners() {
     return <p>Erreur : {error}</p>;
   }
 
+  // Rendering the component
   return (
     <div>
       <h1>Owners list</h1>
@@ -169,6 +225,10 @@ export default function Owners() {
 
       <div className="owners-grid">
         <div className="header">Name</div>
+        <div className="header">Owner ID</div>
+        <div className="header">Email</div>
+        <div className="header">Password</div>
+        <div className="header">User ID</div>
         <div className="header">Action</div>
 
         {owners.map((owner) => (
@@ -177,9 +237,25 @@ export default function Owners() {
               <>
                 <input
                   type="text"
-                  value={editingData.name}
+                  value={editingData.name || ""}
                   onChange={(e) => handleFieldChange("name", e.target.value)}
                 />
+                <div>{owner.id}</div>
+                <input
+                  type="email"
+                  value={editingData.email || ""}
+                  onChange={(e) => handleFieldChange("email", e.target.value)}
+                  autoComplete="off"
+                  />
+                <input
+                  type="password"
+                  value={editingData.password_hash || ""} // including password
+                  onChange={(e) =>
+                    handleFieldChange("password_hash", e.target.value)
+                  }
+                  autoComplete="off"
+                />
+                <div>{owner.user?.id}</div>
                 <div className="actions">
                   <button onClick={handleUpdateOwner}>💾</button>
                   <button onClick={cancelEditing}>❌</button>
@@ -188,7 +264,10 @@ export default function Owners() {
             ) : (
               <>
                 <div>{owner.name}</div>
-
+                <div>{owner.id}</div>
+                <div>{owner.user?.email || "No email"}</div>
+                <div>{owner.user?.password_hash || "No password"}</div>
+                <div>{owner.user?.id || "No user ID"}</div>
                 <div className="actions">
                   <button onClick={() => startEditing(owner.id, owner)}>
                     ✏️
@@ -201,6 +280,7 @@ export default function Owners() {
         ))}
       </div>
 
+      {/* New owner form */}
       <h2>Add new owner</h2>
       <form onSubmit={handleAddOwner}>
         <input
@@ -208,6 +288,22 @@ export default function Owners() {
           name="name"
           placeholder="Name"
           value={newOwner.name}
+          onChange={handleInputChange}
+          required
+        />
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={newOwner.email}
+          onChange={handleInputChange}
+          required
+        />
+        <input
+          type="password"
+          name="password_hash"
+          placeholder="Password"
+          value={newOwner.password_hash}
           onChange={handleInputChange}
           required
         />

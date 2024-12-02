@@ -1,7 +1,7 @@
 @charset "UTF-8";
 .owners-grid {
   display: grid;
-  grid-template-columns: 25% 10%;
+  grid-template-columns: repeat(6, 1fr); /* 6 colonnes */
   gap: 0px;
 }
 
