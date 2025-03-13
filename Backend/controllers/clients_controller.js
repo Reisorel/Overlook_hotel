@@ -8,6 +8,7 @@
 // Model importation
 const Clients = require("../models/clients");
 const Users = require("../models/users");
+const Reservations = require("../models/reservations")
 
 // Get all client
 const getAllClients = async (req, res) => {
@@ -121,6 +122,17 @@ const deleteClient = async (req, res) => {
     if (!client) {
       return res.status(404).json({ message: "Client not found" });
     }
+
+    // Vérifier si le client possède des réservations
+    const reservation = await Reservations.findOne({ where: { id_clients: id } });
+
+    if (reservation) {
+      console.log(`❌ Cannot delete client ${id}: Active reservation found (ID ${reservation.id}).`);
+      return res.status(400).json({
+        message: `Cannot delete client: Client with ID ${id} has an active reservation (ID ${reservation.id}).`
+      });
+    }
+
     // Delete the associated user and client to maintain referential integrity.
     await Users.destroy({ where: { id: client.user_id } });
 

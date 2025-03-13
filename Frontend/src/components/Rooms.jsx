@@ -51,7 +51,6 @@ export default function Rooms() {
 
         setRooms(data.rooms);
         console.log("Fetched rooms:", data.rooms);
-
       } catch (err) {
         console.error("Error fetching rooms:", err);
         setError("Failed to fetch rooms");
@@ -64,7 +63,6 @@ export default function Rooms() {
   // Create new room
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-
 
     setNewRoom((prevRoom) => ({
       ...prevRoom,
@@ -85,9 +83,12 @@ export default function Rooms() {
         body: JSON.stringify(newRoom),
       });
 
-      if (!response.ok) throw new Error("Failed to add room");
-
       const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to add room");
+      }
+
       console.log("Full API response:", result);
       console.log("Room added:", result.room);
       setRooms((prevRooms) => [...prevRooms, result.room]);
@@ -103,13 +104,18 @@ export default function Rooms() {
       });
       console.log("Room to be added:", newRoom);
 
-
       // Show modal
       setModalMessage("Room added successfully!");
       setShowModal(true);
     } catch (err) {
       console.error("Error adding room:", err);
-      setModalMessage("Failed to add room!");
+      if (err.message.includes("Owner not found")) {
+        setModalMessage(
+          `Failed to add room: Owner with ID ${newRoom.id_owner} does not exist.`
+        );
+      } else {
+        setModalMessage("Failed to add room!");
+      }
       setShowModal(true);
     }
   };
@@ -134,23 +140,38 @@ export default function Rooms() {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        const errorDetails = await response.json();
-        throw new Error(errorDetails.message || "Failed to delete room");
+      // Récupération propre des données de réponse
+      let data;
+      try {
+        data = await response.json(); // On essaye de lire une réponse JSON proprement
+      } catch {
+        throw new Error("Unexpected server response");
       }
 
-      // Updating room state :
+      if (!response.ok) {
+        throw data; // On lève directement l'erreur avec le JSON reçu
+      }
+
+      // Mise à jour de l'état des chambres après suppression
       setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
 
-      // Show success modal
+      // Affichage du message de succès
       setModalMessage("Room deleted successfully!");
-      setShowModal(true);
     } catch (err) {
       console.error("Error deleting room:", err);
-      // Show error modal
-      setModalMessage("Failed to delete room!");
-      setShowModal(true);
+
+      // Vérifie si l'erreur contient des infos sur une réservation active
+      if (err.roomId && err.reservationId) {
+        setModalMessage(
+          `Cannot delete room ${err.roomId}: It has an active reservation (ID ${err.reservationId}).`
+        );
+      } else {
+        setModalMessage(err.message || "Failed to delete room!");
+      }
     }
+
+    // Toujours afficher la modale après un succès ou une erreur
+    setShowModal(true);
   };
 
   // Editing room :
@@ -176,7 +197,7 @@ export default function Rooms() {
           headers: {
             "Content-type": "application/json",
           },
-          body: JSON.stringify(editingData)
+          body: JSON.stringify(editingData),
         }
       );
 
@@ -193,7 +214,7 @@ export default function Rooms() {
         )
       );
 
-      setMessage(data.message)
+      setMessage(data.message);
 
       //Show success modal
       setModalMessage("Rooms data correctly updated");
@@ -202,8 +223,8 @@ export default function Rooms() {
       cancelEditing();
     } catch (err) {
       console.error("Error updating room:", err.message);
-      setModalMessage("Failed to update data")
-      setMessage(err.message)
+      setModalMessage("Failed to update data");
+      setMessage(err.message);
     }
   };
 
@@ -246,7 +267,9 @@ export default function Rooms() {
                 <input
                   type="date"
                   value={editingData.check_in}
-                  onChange={(e) => handleFieldChange("check-in", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("check-in", e.target.value)
+                  }
                 />
                 <input
                   type="text"
@@ -297,7 +320,7 @@ export default function Rooms() {
                 <div>{room.name}</div>
                 <div>{room.type}</div>
                 <div>{room.price}</div>
-                <div>{room.available ? "Yes" : "No" }</div>
+                <div>{room.available ? "Yes" : "No"}</div>
                 <div>{room.description}</div>
                 <div>{room.capacity}</div>
                 <div>{room.id}</div>

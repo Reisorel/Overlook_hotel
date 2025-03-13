@@ -44,6 +44,9 @@ export default function Reservations() {
         }
         const data = await response.json();
 
+        console.log("Fetched reservations:", data.reservations); // 🔍 Vérifie les données
+
+
         setReservations(data.reservations);
       } catch (err) {
         setError(err.message);
@@ -194,6 +197,7 @@ export default function Reservations() {
       {showModal && <Modal message={modalMessage} onClose={handleCloseModal} />}
 
       <div className="reservations-grid">
+        <div className="header">id_reservation</div>
         <div className="header">check_in</div>
         <div className="header">check_out</div>
         <div className="header">id_rooms</div>
@@ -205,6 +209,7 @@ export default function Reservations() {
           <>
             {editingId === reservation.id ? (
               <>
+                <div>{reservation.id}</div>
                 <input
                   type="date"
                   value={editingData.check_in}
@@ -247,6 +252,7 @@ export default function Reservations() {
               </>
             ) : (
               <>
+                <div>{reservation.id}</div>
                 <div>{reservation.check_in}</div>
                 <div>{reservation.check_out}</div>
                 <div>{reservation.id_rooms}</div>

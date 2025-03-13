@@ -8,6 +8,7 @@
 // Model importation
 const Owner = require("../models/owner");
 const Users = require("../models/users");
+const Rooms = require("../models/rooms");
 
 // Get all owners
 const getAllOwners = async (req, res) => {
@@ -123,6 +124,17 @@ const deleteOwner = async (req, res) => {
     if (!owner) {
       console.log(`Owner with ID ${id} not found.`);
       return res.status(404).json({ message: "Owner not found" });
+    }
+
+    // Check if owner owns rooms :
+    const rooms = await Rooms.findAll({where: {id_owner: id}})
+    // Impossible to delete owner if owner responsible for rooms 
+    if (rooms.length > 0) {
+      const roomNumbers = rooms.map((room) => room.id).join(", ");
+      console.log(`Cannot delete owner, responsible for room(s): ${roomNumbers}`);
+      return res.status(400).json({
+        message: `Cannot delete owner, responsible for room(s): ${roomNumbers}`
+      })
     }
 
     // Delete the associated user and owner to maintain referential integrity.

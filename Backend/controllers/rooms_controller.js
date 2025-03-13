@@ -8,6 +8,7 @@
 // Model importation
 const Rooms = require("../models/rooms");
 const Owners = require('../models/owner');
+const Reservations = require('../models/reservations')
 
 
 // Get all rooms
@@ -70,7 +71,7 @@ const createRoom = async (req, res) => {
     console.log(`Checking if owner with ID ${id_owner} exists...`);
     const ownerExists = await Owners.findByPk(id_owner);
     if (!ownerExists) {
-      console.log(`Owner with ID ${id_owner} not found.`);
+      console.log(`Owner with ID ${id_owner} not found. Impossible to create room`);
       return res.status(404).json({ message: "Owner not found, cannot create room." });
     }
 
@@ -121,6 +122,21 @@ const deleteRoom = async (req, res) => {
     if (!room) {
       console.log(`Room with ID ${id} not found.`);
       return res.status(404).json({ message: "Room not found." });
+    } else {
+      console.log(`✅ Room with ID ${id} exists:`, room.dataValues);
+    }
+
+    // Check if the room has an active reservation
+    console.log("Checking if the room has active reservations...");
+    const activeReservation = await Reservations.findOne({ where: { id_rooms: id } });
+
+    if (activeReservation) {
+      console.log(`❌ Cannot delete room ${id}: Active reservation found (ID ${activeReservation.id}).`);
+      return res.status(400).json({
+        message: `Cannot delete room: Room with ID ${id} has an active reservation (ID ${activeReservation.id}).`,
+        roomId: id,
+        reservationId: activeReservation.id,
+      });
     }
 
     // Delete the room

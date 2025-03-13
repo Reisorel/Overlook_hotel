@@ -8,8 +8,24 @@ const getAllReservations = async (req, res) => {
   try {
     console.log("Fetching all reservations from the database...");
 
-    // Retrieve all reservations
-    const reservations = await Reservations.findAll();
+    // Récupération des réservations avec transformation en JSON
+    const reservations = await Reservations.findAll({
+      attributes: [
+        "id",
+        "check_in",
+        "check_out",
+        "id_rooms",
+        "id_clients",
+        "number_of_people",
+      ],
+    });
+
+    // Convertir chaque instance Sequelize en objet JSON natif
+    const formattedReservations = reservations.map((reservation) =>
+      reservation.toJSON()
+    );
+
+    // Log des données au bon format
 
     // Log the number of reservations fetched
     if (!reservations.length) {
@@ -20,12 +36,17 @@ const getAllReservations = async (req, res) => {
       });
     }
 
-    console.log(`Number of reservations fetched: ${reservations.length}`);
-    console.log("Reservations fetched:", reservations);
+    console.log(
+      `Number of reservations fetched: ${formattedReservations.length}`
+    );
+    console.log(
+      "Reservations fetched:",
+      JSON.stringify(formattedReservations, null, 2)
+    );
 
     res.status(200).json({
       message: "Reservations retrieved successfully",
-      reservations,
+      reservations: formattedReservations, // ✅ On envoie la version JSON
     });
   } catch (error) {
     console.error("Error retrieving reservations:", error);
@@ -40,7 +61,8 @@ const getAllReservations = async (req, res) => {
 const createReservation = async (req, res) => {
   try {
     // Extract data from the request body
-    const { check_in, check_out, id_rooms, id_clients, number_of_people } = req.body;
+    const { check_in, check_out, id_rooms, id_clients, number_of_people } =
+      req.body;
 
     // Log the received data
     console.log("Received data for reservation creation:", {
@@ -52,10 +74,17 @@ const createReservation = async (req, res) => {
     });
 
     // Validate required fields
-    if (!check_in || !check_out || !id_rooms || !id_clients || !number_of_people) {
+    if (
+      !check_in ||
+      !check_out ||
+      !id_rooms ||
+      !id_clients ||
+      !number_of_people
+    ) {
       console.log("Missing required fields for reservation creation.");
       return res.status(400).json({
-        message: "All fields are required: check_in, check_out, id_rooms, id_clients, number_of_people.",
+        message:
+          "All fields are required: check_in, check_out, id_rooms, id_clients, number_of_people.",
       });
     }
 
@@ -64,7 +93,9 @@ const createReservation = async (req, res) => {
     const roomExists = await Rooms.findByPk(id_rooms);
     if (!roomExists) {
       console.log(`Room with ID ${id_rooms} not found.`);
-      return res.status(404).json({ message: "Room not found, cannot create reservation." });
+      return res
+        .status(404)
+        .json({ message: "Room not found, cannot create reservation." });
     }
 
     // Check if the client exists
@@ -72,7 +103,9 @@ const createReservation = async (req, res) => {
     const clientExists = await Clients.findByPk(id_clients);
     if (!clientExists) {
       console.log(`Client with ID ${id_clients} not found.`);
-      return res.status(404).json({ message: "Client not found, cannot create reservation." });
+      return res
+        .status(404)
+        .json({ message: "Client not found, cannot create reservation." });
     }
 
     // Log the new data before creation
@@ -117,7 +150,11 @@ const deleteReservation = async (req, res) => {
 
     if (!id) {
       console.log("No ID provided in request parameters.");
-      return res.status(400).json({ message: "Reservation ID is required to delete a reservation." });
+      return res
+        .status(400)
+        .json({
+          message: "Reservation ID is required to delete a reservation.",
+        });
     }
 
     console.log(`Attempting to delete reservation with ID: ${id}`);
@@ -131,7 +168,10 @@ const deleteReservation = async (req, res) => {
     }
 
     // Log current reservation data before deletion
-    console.log(`Current reservation data to be deleted:`, reservation.dataValues);
+    console.log(
+      `Current reservation data to be deleted:`,
+      reservation.dataValues
+    );
 
     // Delete the reservation
     console.log(`Deleting reservation with ID: ${id}...`);
@@ -154,7 +194,8 @@ const modifyReservation = async (req, res) => {
     const { id } = req.params;
 
     // Extract updated fields from the request body
-    const { check_in, check_out, id_rooms, id_clients, number_of_people } = req.body;
+    const { check_in, check_out, id_rooms, id_clients, number_of_people } =
+      req.body;
 
     console.log("Received data for reservation modification:", {
       check_in,
@@ -166,7 +207,11 @@ const modifyReservation = async (req, res) => {
 
     if (!id) {
       console.log("No ID provided in request parameters.");
-      return res.status(400).json({ message: "Reservation ID is required to modify a reservation." });
+      return res
+        .status(400)
+        .json({
+          message: "Reservation ID is required to modify a reservation.",
+        });
     }
 
     console.log(`Attempting to modify reservation with ID: ${id}`);
@@ -180,7 +225,10 @@ const modifyReservation = async (req, res) => {
     }
 
     // Log current reservation data before modification
-    console.log("Current reservation data before modification:", reservation.dataValues);
+    console.log(
+      "Current reservation data before modification:",
+      reservation.dataValues
+    );
 
     // Validate related entities (room and client)
     if (id_rooms) {
@@ -188,7 +236,9 @@ const modifyReservation = async (req, res) => {
       const roomExists = await Rooms.findByPk(id_rooms);
       if (!roomExists) {
         console.log(`Room with ID ${id_rooms} not found.`);
-        return res.status(404).json({ message: "Room not found, cannot modify reservation." });
+        return res
+          .status(404)
+          .json({ message: "Room not found, cannot modify reservation." });
       }
     }
 
@@ -197,7 +247,9 @@ const modifyReservation = async (req, res) => {
       const clientExists = await Clients.findByPk(id_clients);
       if (!clientExists) {
         console.log(`Client with ID ${id_clients} not found.`);
-        return res.status(404).json({ message: "Client not found, cannot modify reservation." });
+        return res
+          .status(404)
+          .json({ message: "Client not found, cannot modify reservation." });
       }
     }
 
@@ -231,7 +283,6 @@ const modifyReservation = async (req, res) => {
     res.status(500).json({ message: "Error updating reservation", error });
   }
 };
-
 
 // Exporter les fonctions du contrôleur
 module.exports = {

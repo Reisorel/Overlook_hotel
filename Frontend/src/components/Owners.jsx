@@ -107,13 +107,13 @@ export default function Owners() {
   // Deleting owner
   const handleDelete = async (id) => {
     if (!id) {
-      setModalMessage("Invalid client ID!");
+      setModalMessage("Invalid owner ID!");
       setShowModal(true);
       return;
     }
 
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this client?"
+      "Are you sure you want to delete this owner?"
     );
     if (!confirmDelete) {
       return;
@@ -124,9 +124,10 @@ export default function Owners() {
         method: "DELETE",
       });
 
+      const data = await response.json(); // 🔥 Capture la réponse une seule fois
+
       if (!response.ok) {
-        const errorDetails = await response.json(); // Capture des détails si fournis par l'API
-        throw new Error(errorDetails.message || "Failed to delete client");
+        throw new Error(data.message || "Failed to delete owner");
       }
 
       // Updating owner state :
@@ -139,12 +140,12 @@ export default function Owners() {
       console.error("Error deleting owner:", err);
 
       // Show error modal
-      setModalMessage("Failed to delete owner !");
+      setModalMessage(err.message);;
       setShowModal(true);
     }
   };
 
-  // Edit client
+  // Edit owner
   const startEditing = (id, currentData) => {
     setEditingId(id);
     setEditingData({
@@ -177,7 +178,7 @@ export default function Owners() {
       );
       if (!response.ok) {
       const errorDetails = await response.json();
-      throw new Error(errorDetails.message || "Failed to update client");
+      throw new Error(errorDetails.message || "Failed to update owner");
       }
 
       const data = await response.json();
