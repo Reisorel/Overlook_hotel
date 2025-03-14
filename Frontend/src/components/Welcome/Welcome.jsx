@@ -6,7 +6,7 @@ export default function Welcome() {
 
   return (
     <div className="welcome-container">
-      <h1>Welcome to the section!</h1>
+      <h1>Welcome to the index section!</h1>
       <p>
         <span
           onClick={() => navigate("/rooms")} // Navigation au clic

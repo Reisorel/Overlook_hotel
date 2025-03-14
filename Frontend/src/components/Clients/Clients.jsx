@@ -1,17 +1,6 @@
 import { useState, useEffect } from "react";
+import Modal from "../Modal/Modal";
 import "./Clients.css";
-
-// Creating modal :
-function Modal({ message, onClose }) {
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <p>{message}</p>
-        <button onClick={onClose}>OK</button>
-      </div>
-    </div>
-  );
-}
 
 export default function Clients() {
   // States
@@ -44,7 +33,6 @@ export default function Clients() {
         const response = await fetch("http://localhost:3000/api/clients");
         console.log("Response status:", response.status);
 
-
         if (!response.ok) {
           throw new Error("Error getting clients");
         }
@@ -59,15 +47,18 @@ export default function Clients() {
         } else {
           setClients(data.clients);
         }
+      // Fetching error modal
       } catch (err) {
         setError(err.message);
+        setModalMessage(`Erreur : ${err.message}`);
+        setShowModal(true);
       }
     };
 
     fetchClients();
   }, []);
 
-  // Create new client
+  // Create client
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -100,12 +91,12 @@ export default function Clients() {
       });
       console.log("Client to be added:", newClient);
 
-      // Show modal
+      // Create client modal
       setModalMessage("Client added successfully!");
       setShowModal(true);
     } catch (err) {
-      console.error("Error adding client:", err);
-      setModalMessage("Failed to add client!");
+      console.error("Error adding new client:", err);
+      setModalMessage("Failed to add new client!");
       setShowModal(true);
     }
   };
@@ -136,15 +127,16 @@ export default function Clients() {
       }
 
       // Updating client state :
-      setClients((prevClients) => prevClients.filter((client) => client.id !== id));
+      setClients((prevClients) =>
+        prevClients.filter((client) => client.id !== id)
+      );
 
-      // Show success modal
+      // Delete client modal
       setModalMessage("Success deleting client!");
       setShowModal(true);
+
     } catch (err) {
       console.error("Error deleting client:", err);
-
-      // Show error modal
       setModalMessage(err.message || "Failed to delete client!");
       setShowModal(true);
     }
@@ -179,7 +171,8 @@ export default function Clients() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(editingData),
-        });
+        }
+      );
 
       if (!response.ok) {
         const errorDetails = await response.json();
@@ -195,14 +188,13 @@ export default function Clients() {
 
       setMessage(data.message);
 
-      //Show sucess modal
+      // Edit client modal
       setModalMessage("Client data correctly updated !");
       setShowModal(true);
-
       cancelEditing();
+      
     } catch (err) {
       console.error("Error updating client:", err.message);
-      // Show error modal
       setModalMessage("Fail to update client !");
       setMessage(err.message);
     }
@@ -283,8 +275,9 @@ export default function Clients() {
                   type="password"
                   value={editingData.password_hash} // including password
                   onChange={(e) =>
-                    handleFieldChange("password_hash", e.target.value)}
-                    autoComplete="off"
+                    handleFieldChange("password_hash", e.target.value)
+                  }
+                  autoComplete="off"
                 />
                 <div>{client.id}</div>
                 <div>{client.user?.id}</div>

@@ -1,17 +1,6 @@
 import { useState, useEffect } from "react";
 import "./Owners.css";
-
-// Creating modal :
-function Modal({ message, onClose }) {
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <p>{message}</p>
-        <button onClick={onClose}>OK</button>
-      </div>
-    </div>
-  );
-}
+import Modal from "../Modal/Modal";
 
 export default function Owners() {
   // States
@@ -62,7 +51,7 @@ export default function Owners() {
     fetchOwners();
   }, []);
 
-  // Creating new owner
+  // Create new owner
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -94,17 +83,17 @@ export default function Owners() {
       });
       console.log("Owner to be added:", newOwner);
 
-      // Show modal
+      // Create owner modal
       setModalMessage("Owner added successfully!");
       setShowModal(true);
     } catch (err) {
-      console.error("Error adding owner:", err);
-      setModalMessage("Failed to add owner!");
+      console.error("Error adding new owner:", err);
+      setModalMessage("Failed to add new owner!");
       setShowModal(true);
     }
   };
 
-  // Deleting owner
+  // Delete owner
   const handleDelete = async (id) => {
     if (!id) {
       setModalMessage("Invalid owner ID!");
@@ -133,14 +122,13 @@ export default function Owners() {
       // Updating owner state :
       setOwners((prevOwners) => prevOwners.filter((owner) => owner.id !== id));
 
-      // Show success modal
+      // Delete client modal
       setModalMessage("Success deleting owner !");
       setShowModal(true);
+
     } catch (err) {
       console.error("Error deleting owner:", err);
-
-      // Show error modal
-      setModalMessage(err.message);;
+      setModalMessage(err.message || "Failed to delete owner!");;
       setShowModal(true);
     }
   };
@@ -189,14 +177,13 @@ export default function Owners() {
       );
       setMessage(data.message);
 
-      //Show sucess modal
+      // Edit owner modal
       setModalMessage("Owner data correctly updated!");
       setShowModal(true);
-
       cancelEditing();
+
     } catch (err) {
       console.error("Error updating owner:", err.message);
-      // Show error modal
       setModalMessage("Fail to update owner !");
       setMessage(err.message);
     }
