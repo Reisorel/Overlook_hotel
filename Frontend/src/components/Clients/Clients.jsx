@@ -296,7 +296,7 @@ export default function Clients() {
                 <div>{client.user?.email}</div>
                 <div>{client.user?.password_hash}</div>
                 <div>{client.id}</div>
-                <div>{client.user?.id}</div>
+                <div>{client.user_id}</div>
 
                 <div className="actions">
                   <button onClick={() => startEditing(client.id, client)}>

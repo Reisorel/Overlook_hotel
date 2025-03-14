@@ -255,7 +255,7 @@ export default function Owners() {
                 <div>{owner.id}</div>
                 <div>{owner.user?.email || "No email"}</div>
                 <div>{owner.user?.password_hash || "No password"}</div>
-                <div>{owner.user?.id || "No user ID"}</div>
+                <div>{owner.user_id|| "No user ID"}</div>
                 <div className="actions">
                   <button onClick={() => startEditing(owner.id, owner)}>
                     ✏️
