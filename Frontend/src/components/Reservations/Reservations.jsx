@@ -1,17 +1,6 @@
 import { useState, useEffect } from "react";
+import Modal from "../Modal/Modal";
 import "./Reservations.css";
-
-// Creating modal :
-function Modal({ message, onClose }) {
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <p>{message}</p>
-        <button onClick={onClose}>OK</button>
-      </div>
-    </div>
-  );
-}
 
 export default function Reservations() {
   // States
@@ -30,10 +19,11 @@ export default function Reservations() {
     number_of_people: "",
   });
 
+  //Modal states
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
-  // Getting reservation list
+  // Fetch reservations list
   useEffect(() => {
     const fetchReservations = async () => {
       try {
@@ -43,13 +33,19 @@ export default function Reservations() {
           throw new Error("Error getting reservations");
         }
         const data = await response.json();
+        console.log("Fetched reservations:", data.reservations);
 
-        console.log("Fetched reservations:", data.reservations); // 🔍 Vérifie les données
-
-
-        setReservations(data.reservations);
+        // Checking if reservations list empty
+        if (data.message && data.message === "No reservations found") {
+          setReservations([]);
+        } else {
+          setReservations(data.reservations);
+        }
+      // Fetch reservation modal error
       } catch (err) {
         setError(err.message);
+        setModalMessage(`Erreur : ${err.message}`);
+        setShowModal(true);
       }
     };
 
@@ -85,15 +81,16 @@ export default function Reservations() {
         id_clients: "",
         number_of_people: "",
       });
+
+      // Create reservation modal
+      setModalMessage("Reservation added successfully!");
+      setShowModal(true);
     } catch (err) {
-      if (err.response) {
-        const errorData = await err.response.json();
-        console.error("Error adding reservation:", errorData.message);
-      } else {
-        console.error("Error adding reservation:", err.message);
-      }
+      console.error("Error adding new reservation:", err);
+      setModalMessage("Failed to add new reservation!");
+      setShowModal(true);
     }
-  };
+    }
 
   // Delete reservation
   const handleDelete = async (id) => {
@@ -113,12 +110,12 @@ export default function Reservations() {
         prevReservations.filter((reservation) => reservation.id !== id)
       );
 
-      // Modal intervention
+      // Delete reservation modal
       setModalMessage("Success deleting reservation !");
       setShowModal(true);
     } catch (err) {
       console.error("Error deleting reservation:", err);
-      setModalMessage("Failed to delete reservation !");
+      setModalMessage(err.message || "Failed to delete reservation!");
       setShowModal(true);
     }
   };
@@ -162,7 +159,7 @@ export default function Reservations() {
       );
       setMessage(data.message);
 
-      //Show modal
+      // Delete reservation modal
       setModalMessage("Reservation data correctly updated !");
       setShowModal(true);
 
@@ -170,7 +167,7 @@ export default function Reservations() {
     } catch (err) {
       console.error("Error updating reservation:", err.message);
       setModalMessage("Fail to update reservation !");
-      setShowModal(true); // corrigé
+      setShowModal(true);
     }
   };
 

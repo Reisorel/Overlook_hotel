@@ -1,17 +1,6 @@
 import { useState, useEffect } from "react";
+import Modal from "../Modal/Modal";
 import "./Rooms.css";
-
-// Creating modal :
-function Modal({ message, onClose }) {
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <p>{message}</p>
-        <button onClick={onClose}>OK</button>
-      </div>
-    </div>
-  );
-}
 
 export default function Rooms() {
   // States
@@ -51,10 +40,12 @@ export default function Rooms() {
 
         setRooms(data.rooms);
         console.log("Fetched rooms:", data.rooms);
+
+        // Fetch room modam
       } catch (err) {
-        console.error("Error fetching rooms:", err);
-        setError("Failed to fetch rooms");
-      }
+        setError(err.message);
+        setModalMessage(`Erreur : ${err.message}`);
+        setShowModal(true);      }
     };
 
     fetchRooms();
@@ -104,7 +95,7 @@ export default function Rooms() {
       });
       console.log("Room to be added:", newRoom);
 
-      // Show modal
+      // Create room modal
       setModalMessage("Room added successfully!");
       setShowModal(true);
     } catch (err) {
@@ -120,7 +111,7 @@ export default function Rooms() {
     }
   };
 
-  // Deleting a room
+  // Delete room
   const handleDelete = async (id) => {
     if (!id) {
       setModalMessage("Invalid room ID!");
@@ -140,27 +131,25 @@ export default function Rooms() {
         method: "DELETE",
       });
 
-      // Récupération propre des données de réponse
       let data;
       try {
-        data = await response.json(); // On essaye de lire une réponse JSON proprement
+        data = await response.json();
       } catch {
         throw new Error("Unexpected server response");
       }
 
       if (!response.ok) {
-        throw data; // On lève directement l'erreur avec le JSON reçu
+        throw data;
       }
 
-      // Mise à jour de l'état des chambres après suppression
       setRooms((prevRooms) => prevRooms.filter((room) => room.id !== id));
 
-      // Affichage du message de succès
+      // Delete client modal
       setModalMessage("Room deleted successfully!");
     } catch (err) {
       console.error("Error deleting room:", err);
 
-      // Vérifie si l'erreur contient des infos sur une réservation active
+      // Checking if errors contains infos
       if (err.roomId && err.reservationId) {
         setModalMessage(
           `Cannot delete room ${err.roomId}: It has an active reservation (ID ${err.reservationId}).`
@@ -169,12 +158,10 @@ export default function Rooms() {
         setModalMessage(err.message || "Failed to delete room!");
       }
     }
-
-    // Toujours afficher la modale après un succès ou une erreur
     setShowModal(true);
   };
 
-  // Editing room :
+  // Edit room :
   const startEditing = (id, currentData) => {
     setEditingId(id);
     setEditingData(currentData);
@@ -216,11 +203,11 @@ export default function Rooms() {
 
       setMessage(data.message);
 
-      //Show success modal
+      // Edit client modal
       setModalMessage("Rooms data correctly updated");
       setShowModal(true);
-
       cancelEditing();
+      
     } catch (err) {
       console.error("Error updating room:", err.message);
       setModalMessage("Failed to update data");

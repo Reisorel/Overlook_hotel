@@ -25,7 +25,7 @@ export default function Clients() {
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
-  // Fetching client list
+  // Fetch clients list
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -47,7 +47,7 @@ export default function Clients() {
         } else {
           setClients(data.clients);
         }
-      // Fetching error modal
+      // Fetch clients error modal
       } catch (err) {
         setError(err.message);
         setModalMessage(`Erreur : ${err.message}`);
@@ -101,7 +101,7 @@ export default function Clients() {
     }
   };
 
-  // Deleting client :
+  // Delete client :
   const handleDelete = async (id) => {
     if (!id) {
       setModalMessage("Invalid client ID!");
@@ -192,7 +192,7 @@ export default function Clients() {
       setModalMessage("Client data correctly updated !");
       setShowModal(true);
       cancelEditing();
-      
+
     } catch (err) {
       console.error("Error updating client:", err.message);
       setModalMessage("Fail to update client !");
